@@ -33,7 +33,23 @@ export class PublishStatusService {
     });
 
     if (!block) {
-      throw new NotFoundException(`Block ${blockKey} was not found`);
+      const createdBlock = await this.prisma.designBlock.create({
+        data: {
+          blockKey,
+          label: blockKey,
+          content: {},
+          publishStatus: {
+            create: {
+              isPublished: dto.isPublished ?? true,
+              publishedBy: dto.publishedBy,
+              version: dto.version ?? 1,
+            },
+          },
+        },
+        include: { publishStatus: true },
+      });
+
+      return createdBlock.publishStatus;
     }
 
     if (block.publishStatus) {
